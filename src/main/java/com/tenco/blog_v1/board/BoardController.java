@@ -17,7 +17,28 @@ import java.util.List;
 @Controller
 public class BoardController {
 
+
+    // 네이티브 쿼리 연습
     private final BoardNativeRepository boardNativeRepository;
+    // jPA API ,JPQL
+    private  final BoardRepository boardRepository;
+
+
+    // 특정 게시글 요청 화면
+    // 주소설계 - http://localhost:8080/board/1
+    @GetMapping("/board/{id}")
+    public String detail(@PathVariable(name = "id") Integer id, HttpServletRequest request) {
+        // JPA API 사용
+        // Board board = boardRepository.findById(id);
+
+        // JPQL FETCH join 사용
+        Board board= boardRepository.findByJoinUser(id);
+        request.setAttribute("board", board);
+        return "board/detail";
+    }
+
+
+
 
     @GetMapping("/")
     public String index(Model model) {
@@ -48,14 +69,7 @@ public class BoardController {
     }
 
 
-    // 특정 게시글 요청 화면
-    // 주소설계 - http://localhost:8080/board/10
-    @GetMapping("/board/{id}")
-    public String detail(@PathVariable(name = "id") Integer id, HttpServletRequest request) {
-        Board board = boardNativeRepository.findById(id);
-        request.setAttribute("board", board);
-        return "board/detail";
-    }
+
 
 
     // 주소설계 - http://localhost:8080/board/10/delete ( form 활용이기 때문에 delete 선언)
