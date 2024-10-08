@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @Controller
-public class BoardController {
+public class BoardController  {
 
 
     // 네이티브 쿼리 연습
@@ -85,8 +86,29 @@ public class BoardController {
     // form 태크에서는 GET, POST 방식만 지원하기 때문이다.
     @PostMapping("/board/{id}/delete")
     public String delete(@PathVariable(name = "id") Integer id) {
-        boardRepository.delete(id);
+        // 유효성, 인증검사
+        // 세션에서 로그인 사용자 정보 가져오기 ->인증(로그인 여부), 인가(권한 -내글?)
+
+        User sessionUser = (User )session.getAttribute("sessionUser");
+
+        if(sessionUser==null){
+            return  "redirect:/login-form";
+        }
+
+        //권한 체크
+        Board board= boardRepository.findById(id);
+        if (board == null) {
+
+            return"redirect:/error-404";
+        }
+        if (! board.getUser().getId().equals( sessionUser.getId()  )) {
+            return  "redirect:/error-403";
+
+        }
+//        boardRepository.deleteById(id); // JPQL 식 DELETE
+            boardRepository.jpaDeleteById(id); //JPA EM식 DELETE
         return "redirect:/";
+
     }
 
 

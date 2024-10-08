@@ -51,9 +51,26 @@ public class BoardRepository {
         return  board;
     }
 
-    @Transactional
-    public void delete(int id){
+    /**
+     *  JPQL식 DELETE
+     *  --> JPA API로 만들어 보기
+     * @param id
+     */
+    @Transactional // 트랜잭션 내에서 실행되도록 보장
+    public void deleteById(int id){
           em.createQuery("DELETE FROM Board b WHERE b.id = :id")
                 .setParameter("id",id).executeUpdate();
     }
+
+    /**
+     *  JPA EM식 DELETE
+     * @param id
+     */
+    @Transactional
+    public void jpaDeleteById(int id){
+//        Board board= em.find(Board.class,id);
+//        em.remove(board);
+        em.remove(em.find(Board.class, id));
+    }
+
 }
