@@ -1,8 +1,11 @@
 package com.tenco.blog_v1.board;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Repository
@@ -32,5 +35,10 @@ public class BoardRepository {
         String jpql = " SELECT b from Board b JOIN FETCH b.user WHERE b.id = :id ";
         return  em.createQuery(jpql, Board.class)
                 .setParameter("id",id).getSingleResult();
+    }
+
+    public List<Board> findAll(){
+        TypedQuery<Board> jpql= em.createQuery("SELECT b FROM Board b ORDER BY b.id DESC", Board.class);
+        return  jpql.getResultList();
     }
 }
