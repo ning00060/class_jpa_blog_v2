@@ -1,7 +1,9 @@
 package com.tenco.blog_v1.board;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -40,5 +42,18 @@ public class BoardRepository {
     public List<Board> findAll(){
         TypedQuery<Board> jpql= em.createQuery("SELECT b FROM Board b ORDER BY b.id DESC", Board.class);
         return  jpql.getResultList();
+    }
+
+    // em.persist(board) --> 비영속 상태인 엔티티를 영속상태로 전환
+    @Transactional
+    public Board save(Board board){
+        em.persist(board);
+        return  board;
+    }
+
+    @Transactional
+    public void delete(int id){
+          em.createQuery("DELETE FROM Board b WHERE b.id = :id")
+                .setParameter("id",id).executeUpdate();
     }
 }
