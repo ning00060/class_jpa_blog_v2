@@ -1,11 +1,13 @@
-package com.tenco.blog_v1.user;
+package com.tenco.blog_v2.user;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @RequiredArgsConstructor
@@ -16,6 +18,37 @@ public class UserController {
     // DI 처리
     private final UserRepository userRepository;
     private final HttpSession session;
+
+
+    @PostMapping("user/update")
+    public String update(@ModelAttribute(name = "updateDTO") UserDTO.UpdateDTO reqDTO){
+        // 세션에서 로그인한 사용자 정보 가져오기
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        // 없다면 ㄴ로그인 페이지 이동
+        if(sessionUser == null){
+
+          return "redirect:/login-form";
+        }
+        // 유효성 검사 생략x
+
+        // 사용자 정보 가져오기 (세션 아이디 사용)
+        // 조회한 엔티티에 정보 수정
+        User updateUser=userRepository.updateById(sessionUser.getId(), reqDTO.getPassword(),reqDTO.getEmail());
+        // 세션 정보 동기화 처리
+        session.setAttribute("sessionUser",updateUser);
+        return  "redirect:/";
+    }
+
+    /**
+     *  회원 가입 요청
+     * @param reqDto
+     * @return
+     */
+    public String join(@ModelAttribute(name = "joinDTO")UserDTO.JoinDTO reqDto){
+        userRepository.save(reqDto.toEntity());
+        return "redirect:/login-form";
+    }
+
 
 
     /**
@@ -92,11 +125,17 @@ public class UserController {
      * 반환되는 문자열을 뷰 리졸버가 처리하며
      * 머스테치 템플릿 엔진을 통해서 뷰 파일을 렌더링합니다.
      */
-    @GetMapping("/update-form")
-    public String updateForm(Model model){
-        log.info("회원 정보 수정 페이지");
-        model.addAttribute("name","회원 정보 수정 페이지");
+    @GetMapping("/user/update-form")
+    public String updateForm(HttpServletRequest request) {
+        log.info("회원 수정 페이지");
 
-        return  "user/update-form"; // 템플릿 경로 : user/join-form.mustache
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        if(sessionUser == null) {
+            return "redirect:/login-form";
+        }
+        User user = userRepository.findById(sessionUser.getId());
+        request.setAttribute("user", user);
+
+        return "user/update-form"; // 템플릿 경로 : user/join-form.mustache
     }
 }
